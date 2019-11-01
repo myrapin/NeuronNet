@@ -155,9 +155,8 @@ std::pair<size_t, double> Network::degree(const size_t &n) const {
 std::set<size_t> Network::step(const std::vector<double> &thalamic_input) {
 	double intensity_excitators, intensity_inhibitors;
 	std::set<size_t> firing_neurons;
+	double w;
 	for (size_t i(0); i < size(); ++ i) {
-		double w(1);
-		neurons[i].step();
 		std::vector<std::pair<size_t, double>> p_neighb = neighbors(i);
 		std::vector<size_t> neighb;
 		for (auto paire : p_neighb) {
@@ -167,18 +166,23 @@ std::set<size_t> Network::step(const std::vector<double> &thalamic_input) {
 			if(neurons[neigh].firing()) {
 				if (neurons[neigh].is_inhibitory()) {
 					intensity_inhibitors += degree(neigh).second;
-					w = 0.4;
 				} else {
 					intensity_excitators += degree(neigh).second;
 				}
 			}
 		}
+		if (neurons[i].is_inhibitory()) {
+			w = 0.4;
+		} else {
+			w = 1;
+		}	
 		double courant = ((w * thalamic_input[i]) + (0.5 * intensity_excitators) + intensity_inhibitors);
-		if (courant >= 30) { 
+		neurons[i].input(courant);
+		if (neurons[i].firing()) {
 			firing_neurons.insert(i);
-			courant = 0;
 			neurons[i].reset();
-		}
+		} 
+		neurons[i].step();
 		intensity_excitators = 0;
 		intensity_inhibitors = 0;
 	}
