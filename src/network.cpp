@@ -128,3 +128,60 @@ void Network::print_traj(const int time, const std::map<std::string, size_t> &_n
             }
     (*_out) << std::endl;
 }
+
+
+
+std::vector<std::pair<size_t, double> > Network::neighbors(const size_t &n) const {
+	std::vector<std::pair<size_t, double>> neigh;
+	for (auto& link : links) {
+		if (link.first.first == n) {
+			neigh.push_back(std::make_pair(link.first.second, link.second));
+		}
+	}
+	return neigh;
+}
+
+std::pair<size_t, double> Network::degree(const size_t &n) const {
+	std::pair<size_t, double> sum;
+	std::vector<std::pair<size_t, double>> neigh = neighbors(n);
+	for (auto& neighbor : neigh) {
+		sum.first += 1;
+		sum.second += neighbor.second;
+	}
+	return sum;
+}
+
+
+std::set<size_t> Network::step(const std::vector<double> &thalamic_input) {
+	double intensity_excitators, intensity_inhibitors;
+	std::set<size_t> firing_neurons;
+	for (size_t i(0); i < size(); ++ i) {
+		double w(1);
+		neurons[i].step();
+		std::vector<std::pair<size_t, double>> p_neighb = neighbors(i);
+		std::vector<size_t> neighb;
+		for (auto paire : p_neighb) {
+			neighb.push_back(paire.first);
+		}
+		for (auto neigh : neighb) {
+			if(neurons[neigh].firing()) {
+				if (neurons[neigh].is_inhibitory()) {
+					intensity_inhibitors += degree(neigh).second;
+					w = 0.4;
+				} else {
+					intensity_excitators += degree(neigh).second;
+				}
+			}
+		}
+		double courant = ((w * thalamic_input[i]) + (0.5 * intensity_excitators) + intensity_inhibitors);
+		if (courant >= 30) { 
+			firing_neurons.insert(i);
+			courant = 0;
+			neurons[i].reset();
+		}
+		intensity_excitators = 0;
+		intensity_inhibitors = 0;
+	}
+	return firing_neurons;
+}
+
