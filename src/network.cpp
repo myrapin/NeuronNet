@@ -167,22 +167,6 @@ std::set<size_t> Network::step(const std::vector<double> &thalamic_input) {
 				}
 			}
 		}
-		
-		
-		
-		/*std::vector<size_t> neighb;
-		for (auto paire : p_neighb) {
-			neighb.push_back(paire.first);
-		}
-		for (auto neigh : neighb) {
-			if(neurons[neigh].firing()) {
-				if (neurons[neigh].is_inhibitory()) {
-					intensity_inhibitors += neighbors(neigh)[i].second;
-				} else {
-					intensity_excitators += neighbors(neigh)[i].second;
-				}
-			}
-		}*/
 		if (neurons[i].is_inhibitory()) {
 			w = 0.4;
 		} else {
