@@ -157,20 +157,32 @@ std::set<size_t> Network::step(const std::vector<double> &thalamic_input) {
 	std::set<size_t> firing_neurons;
 	double w;
 	for (size_t i(0); i < size(); ++ i) {
-		std::vector<std::pair<size_t, double>> p_neighb = neighbors(i);
-		std::vector<size_t> neighb;
+		std::vector<std::pair<size_t, double>> neighb = neighbors(i);
+		for (size_t j(0); j < neighb.size(); ++j) {
+			if (neurons[neighb[j].first].firing()) {
+				if (neurons[neighb[j].first].is_inhibitory()) {
+					intensity_inhibitors += neighb[j].second;
+				} else {
+					intensity_excitators += neighb[j].second;
+				}
+			}
+		}
+		
+		
+		
+		/*std::vector<size_t> neighb;
 		for (auto paire : p_neighb) {
 			neighb.push_back(paire.first);
 		}
 		for (auto neigh : neighb) {
 			if(neurons[neigh].firing()) {
 				if (neurons[neigh].is_inhibitory()) {
-					intensity_inhibitors += degree(neigh).second;
+					intensity_inhibitors += neighbors(neigh)[i].second;
 				} else {
-					intensity_excitators += degree(neigh).second;
+					intensity_excitators += neighbors(neigh)[i].second;
 				}
 			}
-		}
+		}*/
 		if (neurons[i].is_inhibitory()) {
 			w = 0.4;
 		} else {
