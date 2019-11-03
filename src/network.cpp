@@ -133,10 +133,8 @@ void Network::print_traj(const int time, const std::map<std::string, size_t> &_n
 
 std::vector<std::pair<size_t, double> > Network::neighbors(const size_t &n) const {
 	std::vector<std::pair<size_t, double>> neigh;
-	for (auto& link : links) {
-		if (link.first.first == n) {
-			neigh.push_back(std::make_pair(link.first.second, link.second));
-		}
+	for (std::map<std::pair<size_t, size_t>, double>::const_iterator it = links.lower_bound({n,0}); (it != links.cend()) and ((it->first).first == n); ++it) {
+		neigh.push_back({(it->first).second, it->second});
 	}
 	return neigh;
 }
